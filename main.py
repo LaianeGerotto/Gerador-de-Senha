@@ -1,8 +1,9 @@
+from email import message
 from tkinter import *
 from tkinter import messagebox
 from random import choice, randint, shuffle
 import pyperclip
-
+import json
 
 # Gerador de senhas
 def gerador_password():
@@ -35,27 +36,56 @@ def save():
   site = site_input.get()
   email = email_input.get()
   password = password_input.get()
+  new_data = {
+    site: {
+      "email": email,
+      "password": password,
+    }
+  }
 
   #Verificação dos campos vazios
   if len(site) == 0 or len(password) == 0:
     messagebox.showinfo(title="Atenção!",message="Por favor, preencha todos os campos")
   else:
-    #Caixa de mensagem para confirmação dos dados
-    ok = messagebox.askokcancel(title=site, message=f"Informações inseridos:\nSite: {site}\nEmail: {email}\nSenha: {password}\nEstão corretos?")
-
-    if ok:
-      with open("data.txt", "a") as data_file:
-        data_file.write(f"{site} | {email} | {password}\n")
-        
+    try:    
+      with open("data.json", "r") as data_file:
+        #Leitura dos antigos dados
+        data = json.load(data_file)
+    except FileNotFoundError:
+      with open("data.json", "w") as data_file:
+        #Salvando dados atualizados
+        json.dump(new_data, data_file, indent=4)
+        #Atualizando os dados novos e antigos
+      
+    else:
+      data.update(new_data)
+      with open("data.json", "w") as data_file:
+        #Salvando dados atualizados
+        json.dump(data, data_file, indent=4)
+    finally:
         #Para apagar os dados do formulário, quando inserir novamente
         site_input.delete(0, END)
         password_input.delete(0, END)
+    
+#-----------------------------------------------------------#
+#Função para pesquisar 
+def find_password():
+  site = site_input.get()
+  try:
+    with open("data.json") as data_file:
+      data = json.load(data_file)
+  except FileNotFoundError:
+    messagebox.showinfo(title="Erro", message="Dados não encontrados")
+  
+  else:
+    if site in data:
+      email = data[site]["email"]
+      password = data[site]["password"]
+      messagebox.showinfo(title=site, message=f"Email: {email}\nPassword: {password}")
     else:
-      site_input.get()
-      password_input.get()
+      messagebox.showinfo(title="Erro", message=f"Não há detalhes para {site}!")
 
-
-
+#-----------------------------------------------------------#
 #Criando a Janela
 window = Tk()
 window.title("Gerenciador de Password")
@@ -71,15 +101,15 @@ canvas.grid(column=1, row=0)
 site = Label(text="Site:", bg="white")
 site.grid(row=1, column=0)
 #Campo Site
-site_input = Entry(width=35)
+site_input = Entry(width=23)
 site_input.focus()
-site_input.grid(row=1,column=1, columnspan=2)
+site_input.grid(row=1,column=1)
 
 #Texto Email
 email = Label(text="Email/Username:", bg="white")
 email.grid(row=2, column=0)
 #Campo Email
-email_input = Entry(width=35)
+email_input = Entry(width=36)
 email_input.grid(row=2,column=1, columnspan=2)
 email_input.insert(0, "teste@teste.com") #pré preenchido
 
@@ -91,12 +121,16 @@ password_input = Entry(width=23)
 password_input.grid(row=3,column=1)
 
 #Botão para gerar
-gerador = Button(text="Gerar Senha", command=gerador_password)
+gerador = Button(text="Gerar Senha", command=gerador_password, width=10)
 gerador.grid(row=3, column=2)
 
 
 #Botão para adicionar
 adicionar = Button(text="Add", width=30, command=save)
 adicionar.grid(row=4, column=1, columnspan=2)
+
+#Botão para pesquisar
+pesquisar = Button(text="Pesquisar", width=10, command=find_password)
+pesquisar.grid(row=1, column=2)
 
 window.mainloop()
