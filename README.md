@@ -11,5 +11,6 @@ Praticar os conceitos de GUI Application - Graphical User Interface.
 
 ## Demo
 
-https://user-images.githubusercontent.com/60964592/173796050-bcedcae7-deb1-4a23-b5ee-c578138b2671.mp4
+
+https://user-images.githubusercontent.com/60964592/176451361-0314ebf0-c53f-423e-92cd-56614dc369dc.mp4
 
